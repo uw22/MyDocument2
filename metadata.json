@@ -1,0 +1,7 @@
+{
+  "name": "My Dokument2",
+  "description": "Professional document scanning and management application.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html class="dark" lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#101922">
+    
+    <title>DocuScan Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            justify-content: center;
+            background-color: #cbd5e1;
+            overscroll-behavior-y: none;
+        }
+        html.dark body {
+            background-color: #0f172a;
+        }
+        
+        #root {
+            width: 100%;
+            max-width: 28rem;
+            background-color: #f6f7f8;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            margin: 0 auto;
+        }
+        html.dark #root {
+            background-color: #101922;
+        }
+
+        @media (min-width: 500px) {
+            body {
+                align-items: center;
+                min-height: 100vh;
+                padding: 20px;
+            }
+            #root {
+                height: 850px;
+                min-height: unset;
+                border-radius: 2rem;
+                overflow: hidden;
+                border: 8px solid #1e293b;
+            }
+            html.dark #root {
+                border-color: #334155;
+            }
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .active-tab-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .document-frame {
+            border: 3px solid #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.28.0?deps=react@18.2.0,react-dom@18.2.0",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-300 dark:bg-slate-900 text-slate-900 dark:text-white min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+</body>
+</html>
