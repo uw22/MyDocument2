@@ -131,7 +131,6 @@ const ScanScreen: React.FC = () => {
                 icon: 'image',
                 img: imgDataUrl,
                 content: imgDataUrl,
-                originalContent: imgDataUrl,
                 isSecure: false,
                 isFavorite: false,
                 category: 'Sonstiges',

@@ -102,7 +102,6 @@ const DashboardScreen: React.FC = () => {
                     icon: icon,
                     img: result,
                     content: result,
-                    originalContent: result,
                     isSecure: false,
                     category: 'Sonstiges',
                     format: 'a4',
@@ -197,6 +196,11 @@ const DashboardScreen: React.FC = () => {
         alert("Wiederherstellung erfolgreich!");
     };
 
+    const handleCloseApp = () => {
+        setIsMenuOpen(false);
+        navigate('/welcome', { replace: true });
+    };
+
     const confirmDelete = () => {
         if (!deleteId) return;
         try {
@@ -280,6 +284,12 @@ const DashboardScreen: React.FC = () => {
                                     <span className="material-symbols-outlined text-orange-500">upload</span>
                                     <span className="font-semibold text-sm">Restore</span>
                                 </button>
+                                <div className="pt-4">
+                                    <button onClick={handleCloseApp} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <span className="material-symbols-outlined text-red-500">logout</span>
+                                        <span className="font-semibold text-sm">App schließen</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -355,7 +365,7 @@ const DashboardScreen: React.FC = () => {
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-3">
                     {filteredDocuments.map((doc) => (
                         <div key={doc.id} onClick={() => !isEditing && navigate(`/details/${doc.id}`)} className="flex flex-col gap-1 group relative">
-                            <div className={`relative w-full ${getFormatClass(doc.format)} rounded-lg shadow-sm overflow-hidden bg-white dark:bg-slate-800 ${isEditing ? 'ring-2 ring-primary ring-offset-1' : ''}`}>
+                            <div className={`relative w-full ${getFormatClass(doc.format)} rounded-lg shadow-sm overflow-hidden bg-white dark:bg-slate-600 ${isEditing ? 'ring-2 ring-primary ring-offset-1' : ''}`}>
                                 {renderCardContent(doc)}
                                 {isEditing ? (
                                     <button onClick={(e) => { e.stopPropagation(); setDeleteId(doc.id); }} className="absolute inset-0 bg-black/40 flex items-center justify-center text-white">

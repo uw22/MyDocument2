@@ -5,9 +5,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
     
+    <!-- Android & PWA Meta -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#101922">
+    <meta name="theme-color" content="#334155">
     
     <title>DocuScan Pro</title>
     
@@ -22,7 +24,7 @@
                     colors: {
                         "primary": "#137fec",
                         "background-light": "#f6f7f8",
-                        "background-dark": "#101922",
+                        "background-dark": "#334155",
                     },
                     fontFamily: {
                         "sans": ["Inter", "sans-serif"]
@@ -42,6 +44,8 @@
             justify-content: center;
             background-color: #cbd5e1;
             overscroll-behavior-y: none;
+            margin: 0;
+            padding: 0;
         }
         html.dark body {
             background-color: #0f172a;
@@ -57,9 +61,10 @@
             margin: 0 auto;
         }
         html.dark #root {
-            background-color: #101922;
+            background-color: #334155;
         }
 
+        /* Responsive adjustments for Native Viewport */
         @media (min-width: 500px) {
             body {
                 align-items: center;
@@ -78,6 +83,7 @@
             }
         }
 
+        /* Native-like scroll behavior */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -100,14 +106,17 @@
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react-router-dom": "https://esm.sh/react-router-dom@6.28.0?deps=react@18.2.0,react-dom@18.2.0",
     "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
     "path": "https://esm.sh/path@^0.12.7",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3"
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3",
+    "url": "https://esm.sh/url@^0.11.4",
+    "@capacitor/cli": "https://esm.sh/@capacitor/cli@^8.0.2"
   }
 }
 </script>
 </head>
-<body class="bg-slate-300 dark:bg-slate-900 text-slate-900 dark:text-white min-h-screen">
+<body>
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
@@ -36,7 +37,7 @@ const FavoritesScreen: React.FC = () => {
         };
     }, [location]);
 
-    const favorites = documents.filter(doc => doc.isFavorite);
+    const favorites = documents.filter(doc => doc.isFavorite && !doc.isSecure);
 
     return (
         <div className="flex flex-col min-h-screen">

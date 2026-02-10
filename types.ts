@@ -8,7 +8,6 @@ export interface DocumentItem {
   icon: string;
   img: string;
   content?: string; // Raw data URL for PDF/Text content
-  originalContent?: string; // To allow reverting crops/edits
   isSecure?: boolean; 
   isFavorite?: boolean;
   category?: string;

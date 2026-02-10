@@ -16,7 +16,7 @@ const BottomNav: React.FC = () => {
 
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50">
-            <div className="bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-[2rem] shadow-2xl px-2 py-2 flex justify-between items-center">
+            <div className="bg-white/80 dark:bg-[#334155]/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-[2rem] shadow-2xl px-2 py-2 flex justify-between items-center">
                 {tabs.map((tab) => {
                     const isActive = location.pathname === tab.path;
                     return (
@@ -42,7 +42,7 @@ const BottomNav: React.FC = () => {
                                 </span>
                                 
                                 {isActive && (
-                                    <div className="absolute -top-0.5 -right-0.5 size-1.5 bg-primary rounded-full border border-white dark:border-[#1e293b]"></div>
+                                    <div className="absolute -top-0.5 -right-0.5 size-1.5 bg-primary rounded-full border border-white dark:border-[#334155]"></div>
                                 )}
                             </div>
                             

@@ -1,7 +1,13 @@
 {
-  "name": "My Dokument2",
-  "description": "Professional document scanning and management application.",
+  "name": "DocuScan Pro Native",
+  "description": "Native Android version of DocuScan Pro with CameraX and Gemini OCR.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
+  ],
+  "androidPermissions": [
+    "android.permission.CAMERA",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+    "android.permission.READ_EXTERNAL_STORAGE"
   ]
 }

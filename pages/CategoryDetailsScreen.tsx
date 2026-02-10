@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
@@ -37,6 +38,7 @@ const CategoryDetailsScreen: React.FC = () => {
     
     // Filter documents by category
     const displayDocs = documents.filter(doc => {
+        if (doc.isSecure) return false;
         if (title === 'Sonstiges') {
              // For "Sonstiges", include items explicitly labeled "Sonstiges" OR items without a category
             return doc.category === 'Sonstiges' || !doc.category;
