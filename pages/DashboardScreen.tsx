@@ -67,7 +67,10 @@ const DashboardScreen: React.FC = () => {
     }, [location]);
 
     const handleImportTrigger = () => {
-        fileInputRef.current?.click();
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
+        }
     };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +82,11 @@ const DashboardScreen: React.FC = () => {
 
         for (const file of Array.from(files) as File[]) {
             try {
+                // Warning for very large files (> 2MB) as localStorage is limited to ~5MB total
+                if (file.size > 2 * 1024 * 1024) {
+                    console.warn(`Datei ${file.name} ist sehr groß (${(file.size / 1024 / 1024).toFixed(2)}MB). Dies könnte den Speicher sprengen.`);
+                }
+
                 const result = await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target?.result as string);
@@ -91,12 +99,12 @@ const DashboardScreen: React.FC = () => {
                     icon = 'image';
                 } else if (file.type.includes('pdf')) {
                     icon = 'picture_as_pdf';
-                } else if (file.type === 'text/plain') {
+                } else if (file.type.includes('text') || file.name.endsWith('.txt')) {
                     icon = 'text_snippet';
                 }
 
                 const newDoc: DocumentItem = {
-                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    id: Date.now() + Math.floor(Math.random() * 10000),
                     name: file.name,
                     date: new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
                     icon: icon,
@@ -111,25 +119,36 @@ const DashboardScreen: React.FC = () => {
                 importedDocs.push(newDoc);
             } catch (err) {
                 console.error("Error importing file:", file.name, err);
+                alert(`Fehler beim Laden von ${file.name}`);
             }
         }
 
         if (importedDocs.length > 0) {
-            const saved = localStorage.getItem('docuscan_documents');
-            const currentDocs = saved ? JSON.parse(saved) : [];
-            const updated = [...importedDocs, ...currentDocs];
-            localStorage.setItem('docuscan_documents', JSON.stringify(updated));
-            window.dispatchEvent(new Event('docuscan-update'));
+            try {
+                const saved = localStorage.getItem('docuscan_documents');
+                const currentDocs = saved ? JSON.parse(saved) : [];
+                const updated = [...importedDocs, ...currentDocs];
+                localStorage.setItem('docuscan_documents', JSON.stringify(updated));
+                window.dispatchEvent(new Event('docuscan-update'));
+                setSaveStatus(`${importedDocs.length} Datei(en) importiert`);
+                setTimeout(() => setSaveStatus(null), 3000);
+            } catch (e: any) {
+                console.error("Storage error:", e);
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    alert("Speicher voll! Bitte löschen Sie einige Dokumente, bevor Sie neue importieren. (Web-Browser limitieren den Speicherplatz)");
+                } else {
+                    alert("Fehler beim Speichern der Dokumente.");
+                }
+            }
         }
 
         setIsImporting(false);
-        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     // --- Sidebar Actions ---
 
     const handleManualSave = () => {
-        setSaveStatus("Erfolgreich gespeichert");
+        setSaveStatus("Datenstand gesichert");
         setTimeout(() => setSaveStatus(null), 2000);
     };
 
@@ -187,13 +206,17 @@ const DashboardScreen: React.FC = () => {
 
     const confirmRestore = () => {
         if (!pendingRestoreData) return;
-        localStorage.setItem('docuscan_documents', JSON.stringify(pendingRestoreData.documents));
-        if (pendingRestoreData.categories) localStorage.setItem('docuscan_categories', JSON.stringify(pendingRestoreData.categories));
-        if (pendingRestoreData.pin) localStorage.setItem('docuscan_pin', pendingRestoreData.pin);
-        window.dispatchEvent(new Event('docuscan-update'));
-        setShowRestoreWarning(false);
-        setPendingRestoreData(null);
-        alert("Wiederherstellung erfolgreich!");
+        try {
+            localStorage.setItem('docuscan_documents', JSON.stringify(pendingRestoreData.documents));
+            if (pendingRestoreData.categories) localStorage.setItem('docuscan_categories', JSON.stringify(pendingRestoreData.categories));
+            if (pendingRestoreData.pin) localStorage.setItem('docuscan_pin', pendingRestoreData.pin);
+            window.dispatchEvent(new Event('docuscan-update'));
+            setShowRestoreWarning(false);
+            setPendingRestoreData(null);
+            alert("Wiederherstellung erfolgreich!");
+        } catch (e) {
+            alert("Fehler beim Wiederherstellen. Speicherplatz reicht evtl. nicht aus.");
+        }
     };
 
     const handleCloseApp = () => {
@@ -247,7 +270,14 @@ const DashboardScreen: React.FC = () => {
 
     return (
         <div className="flex flex-col h-full relative overflow-hidden">
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,application/pdf,text/plain" multiple />
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept="image/*,application/pdf,text/plain,.txt" 
+                multiple 
+            />
             <input type="file" ref={restoreInputRef} onChange={handleRestoreFileChange} className="hidden" accept=".json,application/json" />
 
             {/* Sidebar Drawer */}
@@ -268,23 +298,27 @@ const DashboardScreen: React.FC = () => {
                         
                         <div className="flex-1 py-6 overflow-y-auto">
                             <div className="px-4 space-y-2">
+                                <button onClick={() => { setIsMenuOpen(false); handleImportTrigger(); }} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span className="material-symbols-outlined text-primary">add_box</span>
+                                    <span className="font-semibold text-sm">Dokument importieren</span>
+                                </button>
                                 <button onClick={() => navigate('/settings')} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <span className="material-symbols-outlined text-slate-500">settings</span>
                                     <span className="font-semibold text-sm">Einstellungen</span>
                                 </button>
                                 <button onClick={handleManualSave} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <span className="material-symbols-outlined text-emerald-500">save</span>
-                                    <span className="font-semibold text-sm">Speichern</span>
+                                    <span className="font-semibold text-sm">Backup jetzt</span>
                                 </button>
                                 <button onClick={handleExportBackup} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <span className="material-symbols-outlined text-primary">download</span>
-                                    <span className="font-semibold text-sm">Backup</span>
+                                    <span className="font-semibold text-sm">Daten exportieren</span>
                                 </button>
                                 <button onClick={handleRestoreTrigger} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <span className="material-symbols-outlined text-orange-500">upload</span>
-                                    <span className="font-semibold text-sm">Restore</span>
+                                    <span className="font-semibold text-sm">Daten importieren</span>
                                 </button>
-                                <div className="pt-4">
+                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                                     <button onClick={handleCloseApp} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <span className="material-symbols-outlined text-red-500">logout</span>
                                         <span className="font-semibold text-sm">App schließen</span>
@@ -295,11 +329,11 @@ const DashboardScreen: React.FC = () => {
 
                         <div className="p-6 bg-slate-50 dark:bg-slate-800/20">
                             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                                <span>Status</span>
+                                <span>Speicherstatus</span>
                                 <span>{documents.length} Dokumente</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary" style={{ width: `${Math.min(100, (documents.length / 50) * 100)}%` }}></div>
+                                <div className="h-full bg-primary" style={{ width: `${Math.min(100, (documents.length / 40) * 100)}%` }}></div>
                             </div>
                         </div>
                     </div>
@@ -308,8 +342,11 @@ const DashboardScreen: React.FC = () => {
 
             {/* Notification Toast for Save */}
             {saveStatus && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] bg-emerald-500 text-white px-6 py-2.5 rounded-full shadow-lg font-bold text-xs animate-in slide-in-from-top-4">
-                    {saveStatus}
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] bg-emerald-600 text-white px-6 py-2.5 rounded-full shadow-lg font-bold text-xs animate-in slide-in-from-top-4">
+                    <div className="flex items-center gap-2">
+                         <span className="material-symbols-outlined text-sm">check_circle</span>
+                         {saveStatus}
+                    </div>
                 </div>
             )}
 
@@ -322,7 +359,7 @@ const DashboardScreen: React.FC = () => {
                         </div>
                         <h3 className="text-xl font-bold text-center mb-2">Restore bestätigen?</h3>
                         <p className="text-sm text-center text-slate-500 mb-6">
-                            Alle aktuellen Dokumente werden durch das Backup ({pendingRestoreData?.documents?.length} Dateien) ersetzt.
+                            Alle aktuellen Dokumente werden durch das Backup ({pendingRestoreData?.documents?.length} Dateien) ersetzt. Dieser Vorgang kann nicht rückgängig gemacht werden.
                         </p>
                         <div className="flex gap-3">
                             <button onClick={() => setShowRestoreWarning(false)} className="flex-1 py-3 rounded-xl border">Abbrechen</button>
@@ -336,7 +373,8 @@ const DashboardScreen: React.FC = () => {
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
                     <div className="bg-white dark:bg-background-dark p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
                         <div className="size-16 rounded-full border-4 border-slate-100 dark:border-slate-800 border-t-primary animate-spin"></div>
-                        <p className="font-bold text-slate-900 dark:text-white">Importiere...</p>
+                        <p className="font-bold text-slate-900 dark:text-white">Dokumente werden geladen...</p>
+                        <p className="text-xs text-slate-500">Bitte warten Sie einen Moment.</p>
                     </div>
                 </div>
             )}
@@ -346,9 +384,9 @@ const DashboardScreen: React.FC = () => {
                     <button onClick={() => setIsMenuOpen(true)} className="size-12 flex items-center justify-start text-slate-900 dark:text-white active:scale-90 transition-transform">
                         <span className="material-symbols-outlined text-2xl">menu</span>
                     </button>
-                    <h2 className="text-lg font-bold flex-1 text-center">Ablage</h2>
+                    <h2 className="text-lg font-bold flex-1 text-center">Meine Ablage</h2>
                     <button onClick={() => setIsEditing(!isEditing)} className={`text-sm font-semibold px-3 py-1.5 rounded-full ${isEditing ? 'bg-primary text-white' : 'text-primary'}`}>
-                        {isEditing ? 'Fertig' : 'Bearbeiten'}
+                        {isEditing ? 'Fertig' : 'Edit'}
                     </button>
                 </div>
             </div>
@@ -384,7 +422,8 @@ const DashboardScreen: React.FC = () => {
                 {filteredDocuments.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                         <span className="material-symbols-outlined text-6xl opacity-20">cloud_upload</span>
-                        <p className="text-sm mt-4">Keine Dokumente</p>
+                        <p className="text-sm mt-4">Noch keine Dokumente</p>
+                        <button onClick={handleImportTrigger} className="mt-4 text-primary text-xs font-bold border border-primary/20 px-4 py-2 rounded-full">Jetzt importieren</button>
                     </div>
                 )}
             </main>
@@ -392,10 +431,11 @@ const DashboardScreen: React.FC = () => {
             {deleteId && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-background-dark p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-                        <h3 className="text-lg font-bold mb-4">Löschen?</h3>
+                        <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">Dokument löschen?</h3>
+                        <p className="text-sm text-slate-500 mb-6">Diese Aktion kann nicht rückgängig gemacht werden.</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setDeleteId(null)} className="flex-1 py-3 rounded-xl border border-slate-200">Nein</button>
-                            <button onClick={confirmDelete} className="flex-1 py-3 rounded-xl bg-red-500 text-white">Ja, Löschen</button>
+                            <button onClick={() => setDeleteId(null)} className="flex-1 py-3 rounded-xl border border-slate-200">Abbrechen</button>
+                            <button onClick={confirmDelete} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold">Löschen</button>
                         </div>
                     </div>
                 </div>
